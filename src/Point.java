@@ -41,11 +41,11 @@ final class Point
       else
       {
          Entity nearest = entities.get(0);
-         int nearestDistance = distanceSquared(nearest.position); //need help
+         int nearestDistance = distanceSquared(nearest.getPosition()); //need help
 
          for (Entity other : entities)
          {
-            int otherDistance = distanceSquared(other.position);
+            int otherDistance = distanceSquared(other.getPosition());
 
             if (otherDistance < nearestDistance)
             {

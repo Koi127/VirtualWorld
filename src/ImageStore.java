@@ -218,7 +218,7 @@ final class ImageStore
       {
          Point pt = new Point(Integer.parseInt(properties[MINER_COL]),
                  Integer.parseInt(properties[MINER_ROW]));
-         Entity entity = Entity.createMinerNotFull(properties[MINER_ID],
+         Entity entity = new MinerNotFull(properties[MINER_ID],
                  Integer.parseInt(properties[MINER_LIMIT]),
                  pt,
                  Integer.parseInt(properties[MINER_ACTION_PERIOD]),
@@ -237,7 +237,7 @@ final class ImageStore
          Point pt = new Point(
                  Integer.parseInt(properties[OBSTACLE_COL]),
                  Integer.parseInt(properties[OBSTACLE_ROW]));
-         Entity entity = Entity.createObstacle(properties[OBSTACLE_ID],
+         Entity entity = new Obstacle(properties[OBSTACLE_ID],
                  pt, getImageList(OBSTACLE_KEY));
          world.tryAddEntity(entity);
       }
@@ -251,9 +251,9 @@ final class ImageStore
       {
          Point pt = new Point(Integer.parseInt(properties[ORE_COL]),
                  Integer.parseInt(properties[ORE_ROW]));
-         Entity entity = Entity.createOre(properties[ORE_ID],
-                 pt, Integer.parseInt(properties[ORE_ACTION_PERIOD]),
-                 getImageList(ORE_KEY));
+         Entity entity = new Ore(properties[ORE_ID],
+                 pt, Integer.parseInt(properties[ORE_ACTION_PERIOD]),getImageList(ORE_KEY)
+                 );
          world.tryAddEntity( entity);
       }
 
@@ -266,7 +266,7 @@ final class ImageStore
       {
          Point pt = new Point(Integer.parseInt(properties[SMITH_COL]),
                  Integer.parseInt(properties[SMITH_ROW]));
-         Entity entity = Entity.createBlacksmith(properties[SMITH_ID],
+         Entity entity = new BlackSmith(properties[SMITH_ID],
                  pt, getImageList(SMITH_KEY));
          world.tryAddEntity(entity);
       }
@@ -280,7 +280,7 @@ final class ImageStore
       {
          Point pt = new Point(Integer.parseInt(properties[VEIN_COL]),
                  Integer.parseInt(properties[VEIN_ROW]));
-         Entity entity = Entity.createVein(properties[VEIN_ID],
+         Entity entity = new Vein(properties[VEIN_ID],
                  pt,
                  Integer.parseInt(properties[VEIN_ACTION_PERIOD]),
                  getImageList( VEIN_KEY));

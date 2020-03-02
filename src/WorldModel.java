@@ -33,7 +33,7 @@ final class WorldModel
 
          /* this moves the entity just outside of the grid for
             debugging purposes */
-         entity.position = new Point(-1, -1);
+         entity.setPosition(new Point(-1, -1));
          this.entities.remove(entity);
          setOccupancyCell(pos, null);
       }
@@ -41,9 +41,9 @@ final class WorldModel
 
    public void addEntity(Entity entity)
    {
-      if (withinBounds(entity.position))
+      if (withinBounds(entity.getPosition()))
       {
-         setOccupancyCell(entity.position, entity);
+         setOccupancyCell(entity.getPosition(), entity);
          this.entities.add(entity);
       }
    }
@@ -66,13 +66,13 @@ final class WorldModel
 
    public void moveEntity(Entity entity, Point pos)
    {
-      Point oldPos = entity.position;
+      Point oldPos = entity.getPosition();
       if (withinBounds(pos) && !pos.equals(oldPos))
       {
          setOccupancyCell(oldPos, null);
          removeEntityAt(pos);
          setOccupancyCell(pos, entity);
-         entity.position = pos;
+         entity.setPosition(pos);
       }
    }
 
@@ -89,7 +89,7 @@ final class WorldModel
 
    public boolean moveToOreBlob(Entity blob, Entity target, EventScheduler scheduler)
    {
-      if (adjacent(blob.position, target.position))
+      if (adjacent(blob.getPosition(), target.getPosition()))
       {
          target.removeEntity(this);
          scheduler.unscheduleAllEvents(target);
@@ -97,9 +97,9 @@ final class WorldModel
       }
       else
       {
-         Point nextPos = nextPositionOreBlob(blob, target.position);
+         Point nextPos = nextPositionOreBlob(blob, target.getPosition());
 
-         if (!blob.position.equals(nextPos))
+         if (!blob.getPosition().equals(nextPos))
          {
             Optional<Entity> occupant = getOccupant(nextPos);
             if (occupant.isPresent())
@@ -122,23 +122,23 @@ final class WorldModel
    public Point nextPositionOreBlob(Entity entity,
                                            Point destPos)
    {
-      int horiz = Integer.signum(destPos.x - entity.position.x);
-      Point newPos = new Point(entity.position.x + horiz,
-              entity.position.y);
+      int horiz = Integer.signum(destPos.x - entity.getPosition().x);
+      Point newPos = new Point(entity.getPosition().x + horiz,
+              entity.getPosition().y);
 
       Optional<Entity> occupant = getOccupant(newPos);
 
       if (horiz == 0 ||
-              (occupant.isPresent() && !(occupant.get().kind == EntityKind.ORE)))
+              (occupant.isPresent() && !(occupant.getClass().equals(Ore.class))))
       {
-         int vert = Integer.signum(destPos.y - entity.position.y);
-         newPos = new Point(entity.position.x, entity.position.y + vert);
+         int vert = Integer.signum(destPos.y - entity.getPosition().y);
+         newPos = new Point(entity.getPosition().x, entity.getPosition().y + vert);
          occupant = getOccupant(newPos);
 
          if (vert == 0 ||
-                 (occupant.isPresent() && !(occupant.get().kind == EntityKind.ORE)))
+                 (occupant.isPresent() && !((occupant.getClass().equals(Ore.class)))))
          {
-            newPos = entity.position;
+            newPos = entity.getPosition();
          }
       }
 
@@ -147,19 +147,19 @@ final class WorldModel
 
    public Point nextPositionMiner(Entity entity, Point destPos)
    {
-      int horiz = Integer.signum(destPos.x - entity.position.x);
-      Point newPos = new Point(entity.position.x + horiz,
-              entity.position.y);
+      int horiz = Integer.signum(destPos.x - entity.getPosition().x);
+      Point newPos = new Point(entity.getPosition().x + horiz,
+              entity.getPosition().y);
 
       if (horiz == 0 || isOccupied(newPos))
       {
-         int vert = Integer.signum(destPos.y - entity.position.y);
-         newPos = new Point(entity.position.x,
-                 entity.position.y + vert);
+         int vert = Integer.signum(destPos.y - entity.getPosition().y);
+         newPos = new Point(entity.getPosition().x,
+                 entity.getPosition().y + vert);
 
          if (vert == 0 || isOccupied( newPos))
          {
-            newPos = entity.position;
+            newPos = entity.getPosition();
          }
       }
 
@@ -184,25 +184,25 @@ final class WorldModel
               getOccupancyCell(pos) != null;
    }
 
-   public Optional<Entity> findNearest(Point pos, EntityKind kind)
-   {
-      List<Entity> ofType = new LinkedList<>();
-      for (Entity entity : this.entities)
-      {
-         if (entity.kind == kind)
-         {
-            ofType.add(entity);
-         }
-      }
-
-      return pos.nearestEntity(ofType);
-   }
+//   public Optional<Entity> findNearest(Point pos, EntityKind kind)
+//   {
+//      List<Entity> ofType = new LinkedList<>();
+//      for (Entity entity : this.entities)
+//      {
+//         if (entity.kind == kind)
+//         {
+//            ofType.add(entity);
+//         }
+//      }
+//
+//      return pos.nearestEntity(ofType);
+//   }
 
    public Optional<PImage> getBackgroundImage(Point pos)
    {
       if (withinBounds(pos))
       {
-         return Optional.of(Entity.getCurrentImage(getBackgroundCell(pos)));
+         return Optional.of(getBackgroundCell(pos).getCurrentImage());
       }
       else
       {
@@ -212,11 +212,11 @@ final class WorldModel
 
    public boolean transformNotFull(Entity entity, EventScheduler scheduler, ImageStore imageStore)
    {
-      if (entity.resourceCount >= entity.resourceLimit)
+      if (entity.getResourceCount() >= entity.getResourceLimit())
       {
-         Entity miner = entity.createMinerFull(entity.id, entity.resourceLimit,
-                 entity.position, entity.actionPeriod, entity.animationPeriod,
-                 entity.images);
+         MinerFull miner = new MinerFull(entity.getId(), entity.getResourceLimit(),
+                 entity.getPosition(), entity.getActionPeriod(), entity.getAnimationPeriod(),
+                 entity.getImages());
 
          entity.removeEntity(this);
          scheduler.unscheduleAllEvents( entity);
@@ -232,9 +232,9 @@ final class WorldModel
 
    public void transformFull(Entity entity, EventScheduler scheduler, ImageStore imageStore)
    {
-      Entity miner = entity.createMinerNotFull(entity.id, entity.resourceLimit, //need help
-              entity.position, entity.actionPeriod, entity.animationPeriod,
-              entity.images);
+      MinerNotFull miner =new MinerNotFull(entity.getId(), entity.getResourceLimit(), //need help
+              entity.getPosition(), entity.getActionPeriod(), entity.getAnimationPeriod(),
+              entity.getImages());
 
       entity.removeEntity(this);
       scheduler.unscheduleAllEvents( entity);
@@ -245,9 +245,9 @@ final class WorldModel
 
    public boolean moveToNotFull(Entity miner, Entity target, EventScheduler scheduler)
    {
-      if (adjacent(miner.position, target.position))
+      if (adjacent(miner.getPosition(), target.getPosition()))
       {
-         miner.resourceCount += 1;
+         miner.setResourceCount(miner.getResourceCount()+1);
          target.removeEntity(this);
          scheduler.unscheduleAllEvents(target);
 
@@ -255,9 +255,9 @@ final class WorldModel
       }
       else
       {
-         Point nextPos = nextPositionMiner(miner,  target.position);
+         Point nextPos = nextPositionMiner(miner,  target.getPosition());
 
-         if (!miner.position.equals(nextPos))
+         if (!miner.getPosition().equals(nextPos))
          {
             Optional<Entity> occupant = getOccupant( nextPos);
             if (occupant.isPresent())
@@ -273,15 +273,15 @@ final class WorldModel
 
    public boolean moveToFull(Entity miner, Entity target, EventScheduler scheduler)
    {
-      if (adjacent(miner.position, target.position))
+      if (adjacent(miner.getPosition(), target.getPosition()))
       {
          return true;
       }
       else
       {
-         Point nextPos = nextPositionMiner(miner, target.position);
+         Point nextPos = nextPositionMiner(miner, target.getPosition());
 
-         if (!miner.position.equals(nextPos))
+         if (!miner.getPosition().equals(nextPos))
          {
             Optional<Entity> occupant = getOccupant(nextPos);
             if (occupant.isPresent())
@@ -297,9 +297,9 @@ final class WorldModel
 
    public  Optional<Point> findOpenAround( Point pos)
    {
-      for (int dy = -Entity.getOreReach(); dy <= Entity.getOreReach(); dy++)
+      for (int dy = -Ore.getOreReach(); dy <= Ore.getOreReach(); dy++)
       {
-         for (int dx = -Entity.getOreReach(); dx <= Entity.getOreReach(); dx++)
+         for (int dx = -Ore.getOreReach(); dx <= Ore.getOreReach(); dx++)
          {
             Point newPt = new Point(pos.x + dx, pos.y + dy);
             if (withinBounds(newPt) &&
@@ -315,7 +315,7 @@ final class WorldModel
 
    public void tryAddEntity(Entity entity)
    {
-      if (isOccupied(entity.position))
+      if (isOccupied(entity.getPosition()))
       {
          // arguably the wrong type of exception, but we are not
          // defining our own exceptions yet
